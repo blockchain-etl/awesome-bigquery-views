@@ -1,14 +1,15 @@
 # Useful Queries
 
 - [Top Ethereum Balances](#top-ethereum-balances)
-- [Ether Supply](#ether-supply)
+- [Every Ethereum Balance on Every Day](#ethereum-address-number-growth)
 - [Ethereum Address Number Growth](#ethereum-address-number-growth)
+- [Ether Supply](#ether-supply)
 - [Top Bitcoin Balances](#top-bitcoin-balances)
 - [Bitcoin Gini Index](#bitcoin-gini-index)
 - [Transaction Throughput Comparison](#transaction-throughput-comparison)
 - [More Queries](#more-queries)
 
-## Top 10 Ethereum Balances
+## Top Ethereum Balances
 
 ```sql
 with double_entry_book as (
@@ -43,22 +44,59 @@ order by balance desc
 limit 1000
 ``` 
 
-Related article: https://medium.com/google-cloud/how-to-query-balances-for-all-ethereum-addresses-in-bigquery-fb594e4034a7    
+Related article: https://medium.com/google-cloud/how-to-query-balances-for-all-ethereum-addresses-in-bigquery-fb594e4034a7                 
 
-## Ether Supply
+## Every Ethereum Balance on Every Day
 
-```sql 
-with ether_emitted_by_date  as (
-  select date(block_timestamp) as date, sum(value) as value
-  from `bigquery-public-data.crypto_ethereum.traces`
-  where trace_type in ('genesis', 'reward')
-  group by date(block_timestamp)
+```sql
+with double_entry_book as (
+    -- debits
+    select to_address as address, value as value, block_timestamp
+    from `bigquery-public-data.ethereum_blockchain.traces`
+    where to_address is not null
+    and status = 1
+    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
+    union all
+    -- credits
+    select from_address as address, -value as value, block_timestamp
+    from `bigquery-public-data.ethereum_blockchain.traces`
+    where from_address is not null
+    and status = 1
+    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
+    union all
+    -- transaction fees debits
+    select miner as address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    from `bigquery-public-data.ethereum_blockchain.transactions` as transactions
+    join `bigquery-public-data.ethereum_blockchain.blocks` as blocks on blocks.number = transactions.block_number
+    group by blocks.miner, block_timestamp
+    union all
+    -- transaction fees credits
+    select from_address as address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    from `bigquery-public-data.ethereum_blockchain.transactions`
+),
+double_entry_book_grouped_by_date as (
+    select address, sum(value) as balance_increment, date(block_timestamp) as date
+    from double_entry_book
+    group by address, date
+),
+daily_balances_with_gaps as (
+    select address, date, sum(balance_increment) over (partition by address order by date) as balance,
+    lead(date, 1, current_date()) over (partition by address order by date) as next_date
+    from double_entry_book_grouped_by_date
+),
+calendar AS (
+    select date from unnest(generate_date_array('2015-07-30', current_date())) as date
+),
+daily_balances as (
+    select address, calendar.date, balance
+    from daily_balances_with_gaps
+    join calendar on daily_balances_with_gaps.date <= calendar.date and calendar.date < daily_balances_with_gaps.next_date
 )
-select date, sum(value) OVER (ORDER BY date) / power(10, 18) AS supply
-from ether_emitted_by_date
-```  
+select address, date, balance
+from daily_balances
+```
 
-Related article: https://medium.com/google-cloud/how-to-query-ether-supply-in-bigquery-90f8ae795a8                     
+Related article: https://medium.com/google-cloud/plotting-ethereum-address-growth-chart-55cc0e7207b2       
 
 ## Ethereum Address Number Growth
 
@@ -113,6 +151,21 @@ group by date
 ```
 
 Related article: https://medium.com/google-cloud/plotting-ethereum-address-growth-chart-55cc0e7207b2    
+
+## Ether Supply
+
+```sql 
+with ether_emitted_by_date  as (
+  select date(block_timestamp) as date, sum(value) as value
+  from `bigquery-public-data.crypto_ethereum.traces`
+  where trace_type in ('genesis', 'reward')
+  group by date(block_timestamp)
+)
+select date, sum(value) OVER (ORDER BY date) / power(10, 18) AS supply
+from ether_emitted_by_date
+```  
+
+Related article: https://medium.com/google-cloud/how-to-query-ether-supply-in-bigquery-90f8ae795a8     
 
 ## Top Bitcoin Balances
 
