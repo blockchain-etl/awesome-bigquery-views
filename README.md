@@ -1,7 +1,7 @@
 # Useful Queries
 
 - [Top Ethereum Balances](#top-ethereum-balances)
-- [Every Ethereum Balance on Every Day](#ethereum-address-number-growth)
+- [Every Ethereum Balance on Every Day](#every-ethereum-balance-on-every-day)
 - [Ethereum Address Number Growth](#ethereum-address-number-growth)
 - [Ether Supply](#ether-supply)
 - [Top Bitcoin Balances](#top-bitcoin-balances)
