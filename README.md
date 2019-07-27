@@ -1,4 +1,4 @@
-# Useful Queries
+# Awesome BigQuery Views
 
 - [Top Ethereum Balances](#top-ethereum-balances)
 - [Every Ethereum Balance on Every Day](#every-ethereum-balance-on-every-day)
@@ -343,4 +343,4 @@ https://medium.com/@medvedev1088/comparing-transaction-throughputs-for-8-blockch
 
 ## More Queries
 
-https://github.com/RokoMijic/awesome-bigquery-views
+Check out this awesome repository: https://github.com/RokoMijic/awesome-bigquery-views
