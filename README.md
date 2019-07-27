@@ -6,6 +6,7 @@
 - [Top Bitcoin Balances](#top-bitcoin-balances)
 - [Bitcoin Gini Index](#bitcoin-gini-index)
 - [Transaction Throughput Comparison](#transaction-throughput-comparison)
+- [More Queries](#more-queries)
 
 ## Top 10 Ethereum Balances
 
@@ -286,3 +287,7 @@ order by throughput desc
 
 Related article: 
 https://medium.com/@medvedev1088/comparing-transaction-throughputs-for-8-blockchains-in-google-bigquery-with-google-data-studio-edbabb75b7f1
+
+## More Queries
+
+https://github.com/RokoMijic/awesome-bigquery-views
