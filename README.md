@@ -29,13 +29,17 @@ with double_entry_book as (
     and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
     union all
     -- transaction fees debits
-    select miner as address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value
+    select 
+        miner as address, 
+        sum(cast(receipt_gas_used as numeric) * cast((receipt_effective_gas_price - coalesce(base_fee_per_gas, 0)) as numeric)) as value
     from `bigquery-public-data.crypto_ethereum.transactions` as transactions
     join `bigquery-public-data.crypto_ethereum.blocks` as blocks on blocks.number = transactions.block_number
-    group by blocks.miner
+    group by blocks.number, blocks.miner
     union all
     -- transaction fees credits
-    select from_address as address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value
+    select 
+        from_address as address, 
+        -(cast(receipt_gas_used as numeric) * cast(receipt_effective_gas_price as numeric)) as value
     from `bigquery-public-data.crypto_ethereum.transactions`
 )
 select address, sum(value) as balance
@@ -66,13 +70,19 @@ with double_entry_book as (
     and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
     union all
     -- transaction fees debits
-    select miner as address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    select 
+        miner as address, 
+        sum(cast(receipt_gas_used as numeric) * cast((receipt_effective_gas_price - coalesce(base_fee_per_gas, 0)) as numeric)) as value,
+        block_timestamp
     from `bigquery-public-data.crypto_ethereum.transactions` as transactions
     join `bigquery-public-data.crypto_ethereum.blocks` as blocks on blocks.number = transactions.block_number
-    group by blocks.miner, block_timestamp
+    group by blocks.number, blocks.miner, block_timestamp
     union all
     -- transaction fees credits
-    select from_address as address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    select 
+        from_address as address, 
+        -(cast(receipt_gas_used as numeric) * cast(receipt_effective_gas_price as numeric)) as value,
+        block_timestamp
     from `bigquery-public-data.crypto_ethereum.transactions`
 ),
 double_entry_book_grouped_by_date as (
@@ -118,13 +128,19 @@ with double_entry_book as (
     and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
     union all
     -- transaction fees debits
-    select miner as address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    select 
+        miner as address, 
+        sum(cast(receipt_gas_used as numeric) * cast((receipt_effective_gas_price - coalesce(base_fee_per_gas, 0)) as numeric)) as value, 
+        block_timestamp
     from `bigquery-public-data.crypto_ethereum.transactions` as transactions
     join `bigquery-public-data.crypto_ethereum.blocks` as blocks on blocks.number = transactions.block_number
     group by blocks.miner, block_timestamp
     union all
     -- transaction fees credits
-    select from_address as address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) as value, block_timestamp
+    select 
+        from_address as address, 
+        -(cast(receipt_gas_used as numeric) * cast(receipt_effective_gas_price as numeric)) as value, 
+        block_timestamp
     from `bigquery-public-data.crypto_ethereum.transactions`
 ),
 double_entry_book_grouped_by_date as (
