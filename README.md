@@ -346,6 +346,9 @@ https://console.cloud.google.com/bigquery?sq=749871510730:082d50190dc04d79aaf7ee
 
 ## Transaction Throughput Comparison
 
+- 🔍 [Run in BigQuery](asdf)
+- 📊 [View in DataStudio](asdf)
+
 ```sql
 with bitcoin_throughput as (
     -- takes transactions count in every block and divides it by average block time on that day
