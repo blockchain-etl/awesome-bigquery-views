@@ -5,14 +5,14 @@
 DECLARE start_address STRING DEFAULT LOWER('0x47068105c5feff69e44520b251b9666d4b512a70');
 DECLARE end_address STRING DEFAULT LOWER('0x2604afb5a64992e5abbf25865c9d3387ade92bad');
 
-with traces_0 as (
-  select *
-  from `bigquery-public-data.crypto_ethereum.traces`
-  where from_address = start_address
+WITH traces_0 AS (
+  SELECT *
+  FROM `bigquery-public-data.crypto_ethereum.traces`
+  WHERE from_address = start_address
 ),
-traces_1_hop as (
+traces_1_hop AS (
   SELECT
-      1 as hops,
+      1 AS hops,
       traces_1.from_address,
       traces_1.to_address,
       traces_1.trace_address,
@@ -23,41 +23,41 @@ traces_1_hop as (
   ON traces_0.to_address = traces_1.from_address
   AND traces_0.block_timestamp <= traces_1.block_timestamp 
 ),
-traces_2_hops as (
+traces_2_hops AS (
   SELECT
-      2 as hops,
+      2 AS hops,
       traces_2.from_address,
       traces_2.to_address,
       traces_2.trace_address,
       traces_2.block_timestamp,
-      concat(path, ' -> ', traces_2.to_address) as path
+      concat(path, ' -> ', traces_2.to_address) AS path
   FROM `bigquery-public-data.crypto_ethereum.traces` AS traces_2
   INNER JOIN traces_1_hop
   ON traces_1_hop.to_address = traces_2.from_address
   AND traces_1_hop.block_timestamp <= traces_2.block_timestamp 
 ),
-traces_3_hops as (
+traces_3_hops AS (
   SELECT
-      3 as hops,
+      3 AS hops,
       traces_3.from_address,
       traces_3.to_address,
       traces_3.trace_address,
       traces_2_hops.block_timestamp,
-      concat(path, ' -> ', traces_3.to_address) as path
+      concat(path, ' -> ', traces_3.to_address) AS path
   FROM `bigquery-public-data.crypto_ethereum.traces` AS traces_3
   INNER JOIN traces_2_hops
   ON traces_2_hops.to_address = traces_3.from_address
   AND traces_2_hops.block_timestamp <= traces_3.block_timestamp 
-  where traces_3.to_address = end_address
+  WHERE traces_3.to_address = end_address
 ),
 traces_all_hops AS (
-    select * from traces_1_hop
+    SELECT * FROM traces_1_hop
     UNION ALL
-    select * from traces_2_hops
+    SELECT * FROM traces_2_hops
     UNION ALL
-    select * from traces_3_hops
+    SELECT * FROM traces_3_hops
 )
-select *
-from traces_all_hops
-where hops = 3
-limit 100
+SELECT *
+FROM traces_all_hops
+WHERE hops = 3
+LIMIT 100
