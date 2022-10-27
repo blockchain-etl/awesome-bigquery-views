@@ -30,7 +30,7 @@ WITH double_entry_book AS (
     FROM `bigquery-public-data.crypto_ethereum.transactions`
 ),
 double_entry_book_grouped_by_date AS (
-    SELECT address, SUM(value) AS balance_increment, date(block_timestamp) AS date
+    SELECT address, SUM(value) AS balance_increment, DATE(block_timestamp) AS date
     FROM double_entry_book
     GROUP BY address, date
 ),
