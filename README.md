@@ -1,5 +1,10 @@
 # Awesome BigQuery Views
 
+| Network | Query | Description | Screenshot | DataStudio | BigQuery
+| --- | --- | --- | --- | --- | --- 
+| Ethereum | [📝](ethereum/top-ethereum-balances.sql) | Top 1K addresses, by balance | ⏳ | ⏳ | ⏳
+
+
 - [Top Ethereum Balances](#top-ethereum-balances)
 - [Every Ethereum Balance on Every Day](#every-ethereum-balance-on-every-day)
 - [Ethereum Address Number Growth](#ethereum-address-number-growth)
