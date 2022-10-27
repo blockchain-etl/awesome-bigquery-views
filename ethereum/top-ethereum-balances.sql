@@ -1,34 +1,34 @@
-with double_entry_book as (
+WITH double_entry_book AS (
     -- debits
-    select to_address as address, value as value
-    from `bigquery-public-data.crypto_ethereum.traces`
-    where to_address is not null
-    and status = 1
-    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
-    union all
+    SELECT to_address AS address, value AS value
+    FROM `bigquery-public-data.crypto_ethereum.traces`
+    WHERE to_address IS NOT NULL
+    AND status = 1
+    AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS NULL)
+    UNION ALL
     -- credits
-    select from_address as address, -value as value
-    from `bigquery-public-data.crypto_ethereum.traces`
-    where from_address is not null
-    and status = 1
-    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
-    union all
+    SELECT from_address AS address, -value AS value
+    FROM `bigquery-public-data.crypto_ethereum.traces`
+    WHERE from_address IS NOT NULL
+    AND status = 1
+    AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS NULL)
+    UNION ALL
     -- transaction fees debits
-    select 
-        miner as address, 
-        sum(cast(receipt_gas_used as numeric) * cast((receipt_effective_gas_price - coalesce(base_fee_per_gas, 0)) as numeric)) as value
-    from `bigquery-public-data.crypto_ethereum.transactions` as transactions
-    join `bigquery-public-data.crypto_ethereum.blocks` as blocks on blocks.number = transactions.block_number
-    group by blocks.number, blocks.miner
-    union all
+    SELECT 
+        miner AS address, 
+        SUM(CAST(receipt_gas_used AS numeric) * CAST((receipt_effective_gas_price - COALESCE(base_fee_per_gas, 0)) as numeric)) AS value
+    FROM `bigquery-public-data.crypto_ethereum.transactions` AS transactions
+    join `bigquery-public-data.crypto_ethereum.blocks` AS blocks ON blocks.number = transactions.block_number
+    GROUP BY blocks.number, blocks.miner
+    UNION ALL
     -- transaction fees credits
-    select 
-        from_address as address, 
-        -(cast(receipt_gas_used as numeric) * cast(receipt_effective_gas_price as numeric)) as value
-    from `bigquery-public-data.crypto_ethereum.transactions`
+    SELECT 
+        from_address AS address, 
+        -(CAST(receipt_gas_used AS numeric) * CAST(receipt_effective_gas_price AS numeric)) AS value
+    FROM `bigquery-public-data.crypto_ethereum.transactions`
 )
-select address, sum(value) as balance
-from double_entry_book
-group by address
-order by balance desc
-limit 1000
+SELECT address, SUM(value) AS balance
+FROM double_entry_book
+GROUP BY address
+ORDER BY balance DESC
+LIMIT 1000
