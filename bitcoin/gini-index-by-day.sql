@@ -32,7 +32,7 @@ calendar as (
 daily_balances AS (
     SELECT address, calendar.date, balance
     FROM daily_balances_with_gaps
-    JOIN calendar on daily_balances_with_gaps.date <= calendar.date AND calendar.date < daily_balances_with_gaps.next_date
+    JOIN calendar ON daily_balances_with_gaps.date <= calendar.date AND calendar.date < daily_balances_with_gaps.next_date
     WHERE balance > 1
 ),
 address_counts AS (
@@ -46,7 +46,7 @@ address_counts AS (
 daily_balances_sampled AS (
     SELECT address, daily_balances.date, balance
     FROM daily_balances
-    JOIN address_counts on daily_balances.date = address_counts.date
+    JOIN address_counts ON daily_balances.date = address_counts.date
     WHERE MOD(ABS(FARM_FINGERPRINT(address)), 100000000)/100000000 <= SAFE_DIVIDE(10000, address_count) 
 ),
 ranked_daily_balances AS (
