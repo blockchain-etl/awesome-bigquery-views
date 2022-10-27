@@ -4,6 +4,7 @@ Here are some examples of how to derive insights from on-chain crypto data. Not 
 
 | Network | Description | Query | Screenshot | BigQuery | DataStudio | Notes
 | --- | --- | --- | --- | --- | --- | ---
+| Band | Latest oracle prices | [📝](band/latest-prices.sql) | | | | | 
 | Bitcoin | Top 1K addresses, by balance | [📝](bitcoin/top-bitcoin-balances.sql) |  | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:9bd85ce4d6174e909cfc89c09cb1cc55) | [📊](https://datastudio.google.com/u/1/reporting/c61d1ee3-0e67-4f19-a322-4aed82a21e1b/page/p_a72nk0pzzc) | |
 | Bitcoin | Bitcoin Gini index, by day | [📝](bitcoin/gini-index-by-day.sql) |  | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:531f2d1edf614723b2120a839e5df04b) | [📊](https://datastudio.google.com/u/1/reporting/c61d1ee3-0e67-4f19-a322-4aed82a21e1b/page/p_a72nk0pzzc) | [[1](https://cloud.google.com/blog/products/data-analytics/introducing-six-new-cryptocurrencies-in-bigquery-public-datasets-and-how-to-analyze-them)]
 | Ethereum | Top 1K addresses, by balance  | [📝](ethereum/top-ethereum-balances.sql)|  | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:a8286e1cee0e4ee2b16872640faa31c2) | [📊](https://datastudio.google.com/u/1/reporting/c61d1ee3-0e67-4f19-a322-4aed82a21e1b/page/9tC6C) | [[1](https://medium.com/google-cloud/how-to-query-balances-for-all-ethereum-addresses-in-bigquery-fb594e4034a7)]
