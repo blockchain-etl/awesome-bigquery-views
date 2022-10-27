@@ -1,66 +1,66 @@
-with 
-double_entry_book as (
-    select 
-        array_to_string(outputs.addresses,',') as address,
+WITH 
+double_entry_book AS (
+    SELECT 
+        ARRAY_TO_STRING(outputs.addresses,',') AS address,
         value, block_timestamp
-    from `crypto-etl-bitcoin-prod.bitcoin_blockchain.transactions` join unnest(outputs) as outputs
-    union all
-    select 
-        array_to_string(inputs.addresses,',') as address,
-        -value as value, block_timestamp
-    from `crypto-etl-bitcoin-prod.bitcoin_blockchain.transactions` join unnest(inputs) as inputs
+    FROM `bigquery-public-data.crypto_bitcoin.transactions` JOIN UNNEST(outputs) AS outputs
+    UNION ALL
+    SELECT 
+        ARRAY_TO_STRING(inputs.addresses,',') AS address,
+        -value AS value, block_timestamp
+    FROM `bigquery-public-data.crypto_bitcoin.transactions` JOIN UNNEST(inputs) AS inputs
 ),
-double_entry_book_by_date as (
-    select 
-        date(block_timestamp) as date, 
+double_entry_book_by_date AS (
+    SELECT 
+        DATE(block_timestamp) AS date, 
         address, 
-        sum(value * 0.00000001) as value
-    from double_entry_book
-    group by address, date
+        SUM(value * 0.00000001) AS value
+    FROM double_entry_book
+    GROUP BY address, date
 ),
-daily_balances_with_gaps as (
-    select 
+daily_balances_with_gaps AS (
+    SELECT 
         address, 
         date,
-        sum(value) over (partition by address order by date) as balance,
-        lead(date, 1, current_date()) over (partition by address order by date) as next_date
-        from double_entry_book_by_date
+        SUM(value) OVER (PARTITION BY address ORDER BY date) AS balance,
+        LEAD(date, 1, CURRENT_DATE()) OVER (PARTITION BY address ORDER BY date) AS next_date
+        FROM double_entry_book_by_date
 ),
 calendar as (
-    select date from unnest(generate_date_array('2009-01-03', current_date())) as date
+    SELECT date FROM UNNEST(GENERATE_DATE_ARRAY('2009-01-03', CURRENT_DATE())) AS date
 ),
-daily_balances as (
-    select address, calendar.date, balance
-    from daily_balances_with_gaps
-    join calendar on daily_balances_with_gaps.date <= calendar.date and calendar.date < daily_balances_with_gaps.next_date
-    where balance > 1
+daily_balances AS (
+    SELECT address, calendar.date, balance
+    FROM daily_balances_with_gaps
+    JOIN calendar on daily_balances_with_gaps.date <= calendar.date AND calendar.date < daily_balances_with_gaps.next_date
+    WHERE balance > 1
 ),
-address_counts as (
-    select
+address_counts AS (
+    SELECT
         date,
-        count(*) as address_count
-    from
+        count(*) AS address_count
+    FROM
         daily_balances
-    group by date
+    GROUP BY date
 ),
-daily_balances_sampled as (
-    select address, daily_balances.date, balance
-    from daily_balances
-    join address_counts on daily_balances.date = address_counts.date
-    where mod(abs(farm_fingerprint(address)), 100000000)/100000000 <= safe_divide(10000, address_count) 
+daily_balances_sampled AS (
+    SELECT address, daily_balances.date, balance
+    FROM daily_balances
+    JOIN address_counts on daily_balances.date = address_counts.date
+    WHERE MOD(ABS(FARM_FINGERPRINT(address)), 100000000)/100000000 <= SAFE_DIVIDE(10000, address_count) 
 ),
-ranked_daily_balances as (
-    select 
+ranked_daily_balances AS (
+    SELECT 
         date,
         balance,
-        row_number() over (partition by date order by balance desc) as rank
-    from daily_balances_sampled
+        ROW_NUMBER() OVER (PARTITION BY date ORDER BY balance DESC) AS rank
+    FROM daily_balances_sampled
 )
-select 
+SELECT 
     date, 
     -- (1 − 2B) https://en.wikipedia.org/wiki/Gini_coefficient
-    1 - 2 * sum((balance * (rank - 1) + balance / 2)) / count(*) / sum(balance) as gini
-from ranked_daily_balances
-group by date
-having sum(balance) > 0
-order by date asc
+    1 - 2 * SUM((balance * (rank - 1) + balance / 2)) / COUNT(*) / SUM(balance) AS gini
+FROM ranked_daily_balances
+GROUP BY date
+HAVING SUM(balance) > 0
+ORDER BY date ASC
