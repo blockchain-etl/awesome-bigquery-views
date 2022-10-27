@@ -10,7 +10,7 @@
 | Ethereum | Ether supply by day | [📝](ethereum/ether-supply-by-day.sql)| ⏳ | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:7bd873dec1cd417b89552495cad09e56) | [📊](https://datastudio.google.com/u/1/reporting/c61d1ee3-0e67-4f19-a322-4aed82a21e1b/page/9tC6C) | [[1](https://medium.com/google-cloud/how-to-query-ether-supply-in-bigquery-90f8ae795a8)]
 | Ethereum | Shortest path between addresses | [📝](ethereum/shortest-path-via-traces.sql) | ⏳ | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:2d202e496bf343a0aa1060f4ef35ffff) | ❌
 | Zilliqa | Shortest path between addresses v2 | [📝](zilliqa/shortest-path-via-traces-v2.sql) | ⏳ | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:c4c9b9294acb42b183233b158cc67074) | ❌
-| Multiple | Transaction throughput comparison of multiple blockchains | [📝](multi/transaction-throughput-comparison.sql) | ⏳ | ⏳ | ⏳ | [[1](https://medium.com/@medvedev1088/comparing-transaction-throughputs-for-8-blockchains-in-google-bigquery-with-google-data-studio-edbabb75b7f1)]
+| Multiple | Transaction throughput comparison of multiple blockchains | [📝](multi/transaction-throughput-comparison.sql) | ⏳ | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:8348a785cb274d7b88cf6b3d07e0a5c6) | ⏳ | [[1](https://medium.com/@medvedev1088/comparing-transaction-throughputs-for-8-blockchains-in-google-bigquery-with-google-data-studio-edbabb75b7f1)]
 
 ## More Queries
 
