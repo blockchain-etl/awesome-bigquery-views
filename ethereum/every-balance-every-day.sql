@@ -1,51 +1,51 @@
-with double_entry_book as (
+WITH double_entry_book AS (
     -- debits
-    select to_address as address, value as value, block_timestamp
-    from `bigquery-public-data.crypto_ethereum.traces`
-    where to_address is not null
-    and status = 1
-    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
-    union all
+    SELECT to_address AS address, value AS value, block_timestamp
+    FROM `bigquery-public-data.crypto_ethereum.traces`
+    WHERE to_address IS NOT NULL
+    AND status = 1
+    AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS NULL)
+    UNION ALL
     -- credits
-    select from_address as address, -value as value, block_timestamp
-    from `bigquery-public-data.crypto_ethereum.traces`
-    where from_address is not null
-    and status = 1
-    and (call_type not in ('delegatecall', 'callcode', 'staticcall') or call_type is null)
-    union all
+    SELECT from_address AS address, -value AS value, block_timestamp
+    FROM `bigquery-public-data.crypto_ethereum.traces`
+    WHERE from_address IS NOT NULL
+    AND status = 1
+    AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS NULL)
+    UNION ALL
     -- transaction fees debits
-    select 
-        miner as address, 
-        sum(cast(receipt_gas_used as numeric) * cast((receipt_effective_gas_price - coalesce(base_fee_per_gas, 0)) as numeric)) as value,
+    SELECT 
+        miner AS address, 
+        SUM(CAST(receipt_gas_used AS numeric) * CAST((receipt_effective_gas_price - COALESCE(base_fee_per_gas, 0)) AS numeric)) AS value,
         block_timestamp
-    from `bigquery-public-data.crypto_ethereum.transactions` as transactions
-    join `bigquery-public-data.crypto_ethereum.blocks` as blocks on blocks.number = transactions.block_number
-    group by blocks.number, blocks.miner, block_timestamp
-    union all
+    FROM `bigquery-public-data.crypto_ethereum.transactions` AS transactions
+    JOIN `bigquery-public-data.crypto_ethereum.blocks` AS blocks ON blocks.number = transactions.block_number
+    GROUP BY blocks.number, blocks.miner, block_timestamp
+    UNION ALL
     -- transaction fees credits
-    select 
-        from_address as address, 
-        -(cast(receipt_gas_used as numeric) * cast(receipt_effective_gas_price as numeric)) as value,
+    SELECT 
+        from_address AS address, 
+        -(CAST(receipt_gas_used AS numeric) * CAST(receipt_effective_gas_price AS numeric)) AS value,
         block_timestamp
-    from `bigquery-public-data.crypto_ethereum.transactions`
+    FROM `bigquery-public-data.crypto_ethereum.transactions`
 ),
-double_entry_book_grouped_by_date as (
-    select address, sum(value) as balance_increment, date(block_timestamp) as date
-    from double_entry_book
-    group by address, date
+double_entry_book_grouped_by_date AS (
+    SELECT address, SUM(value) AS balance_increment, DATE(block_timestamp) AS date
+    FROM double_entry_book
+    GROUP BY address, date
 ),
-daily_balances_with_gaps as (
-    select address, date, sum(balance_increment) over (partition by address order by date) as balance,
-    lead(date, 1, current_date()) over (partition by address order by date) as next_date
-    from double_entry_book_grouped_by_date
+daily_balances_with_gaps AS (
+    SELECT address, date, SUM(balance_increment) OVER (PARTITION BY address ORDER BY date) AS balance,
+    LEAD(date, 1, CURRENT_DATE()) OVER (PARTITION BY address ORDER BY date) AS next_date
+    FROM double_entry_book_grouped_by_date
 ),
 calendar AS (
-    select date from unnest(generate_date_array('2015-07-30', current_date())) as date
+    SELECT date FROM UNNEST(GENERATE_DATE_ARRAY('2015-07-30', CURRENT_DATE())) AS date
 ),
-daily_balances as (
-    select address, calendar.date, balance
-    from daily_balances_with_gaps
-    join calendar on daily_balances_with_gaps.date <= calendar.date and calendar.date < daily_balances_with_gaps.next_date
+daily_balances AS (
+    SELECT address, calendar.date, balance
+    FROM daily_balances_with_gaps
+    JOIN calendar ON daily_balances_with_gaps.date <= calendar.date AND calendar.date < daily_balances_with_gaps.next_date
 )
-select address, date, balance
-from daily_balances
+SELECT address, date, balance
+FROM daily_balances
