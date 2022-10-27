@@ -1,5 +1,7 @@
 # Awesome BigQuery Views
 
+Here are some examples of how to derive insights from on-chain crypto data. Not all networks have examples here - you can find the complete list of crypto datasets in [blockchain-etl/public-datasets](https://github.com/blockchain-etl/public-datasets)
+
 | Network | Description | Query | Screenshot | BigQuery | DataStudio | Notes
 | --- | --- | --- | --- | --- | --- | ---
 | Bitcoin | Top 1K addresses, by balance | [📝](bitcoin/top-bitcoin-balances.sql) |  | [🔍](https://console.cloud.google.com/bigquery?sq=896878822558:9bd85ce4d6174e909cfc89c09cb1cc55) | [📊](https://datastudio.google.com/u/1/reporting/c61d1ee3-0e67-4f19-a322-4aed82a21e1b/page/p_a72nk0pzzc) | |
